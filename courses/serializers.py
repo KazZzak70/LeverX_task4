@@ -46,7 +46,7 @@ class CourseListSerializer(serializers.ModelSerializer):
 
 class CourseMemberAddSerializer(serializers.ModelSerializer):
     """Добавление пользователя к курсу"""
-    user = serializers.SlugRelatedField(slug_field="username", read_only=True)
+    user = serializers.SlugRelatedField(slug_field="username", queryset=User.objects.all())
 
     class Meta:
         model = CourseMember
@@ -60,7 +60,7 @@ class CourseMemberAddSerializer(serializers.ModelSerializer):
 
 class CourseMemberDeleteSerializer(serializers.ModelSerializer):
     """Удаление студента из курса"""
-    user = serializers.SlugRelatedField(slug_field="username", read_only=True)
+    user = serializers.SlugRelatedField(slug_field="username", queryset=User.objects.all())
 
     class Meta:
         model = CourseMember

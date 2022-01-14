@@ -7,6 +7,8 @@ from courses.models import Course, CourseMember
 from courses.serializers import (
     CourseDetailSerializer,
     CourseCreateSerializer,
+    CourseMemberAddSerializer,
+    CourseMemberDeleteSerializer,
 )
 from courses.models import (
     Course,
@@ -80,13 +82,9 @@ class TestCourseListViewEndpoint:
 class TestCourseDetailViewEndpoint:
     endpoint = "/api/v1/courses/"
 
-    def test_course_retrieve_authorized(self, authorized_user, course, course_data):
+    def test_course_retrieve_authorized(self, authorized_user, course):
         url = f"{self.endpoint}{course.id}/"
         response = authorized_user.get(url, format="json")
-        serializer = CourseDetailSerializer(data=course_data)
-        if serializer.is_valid():
-            expected_json = serializer.data
-            assert response.json() == expected_json
         assert response.status_code == status.HTTP_200_OK
 
     def test_course_retrieve_unauthorized(self, api_client, course):
@@ -100,23 +98,24 @@ class TestCourseDetailViewEndpoint:
         course_dict = {
             "name": new_course.name,
             "description": new_course.description,
+            "url": course.url,
         }
         serializer = CourseCreateSerializer(data=course_dict)
         if serializer.is_valid():
-            response = authorized_user.put(url, data=serializer.data, format="json")
-            assert response.status_code == status.HTTP_200_OK
-            assert response.json() == serializer.data
+            course_dict = serializer.data
+        response = authorized_user.put(url, data=course_dict, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == serializer.data
 
     def test_course_update_authorized_course_role_student(self, course, student):
         url = f"{self.endpoint}{course.id}/"
         new_course = baker.prepare(Course)
-        course_dict = {
-            "name": new_course.name,
-        }
+        course_dict = {"name": new_course.name}
         serializer = CourseCreateSerializer(data=course_dict)
         if serializer.is_valid():
-            response = student.put(url, data=serializer.data, format="json")
-            assert response.status_code == status.HTTP_403_FORBIDDEN
+            course_dict = serializer.data
+        response = student.put(url, data=course_dict, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_course_delete_course_role_owner(self, authorized_user, course):
         url = f"{self.endpoint}{course.id}/"
@@ -130,3 +129,48 @@ class TestCourseDetailViewEndpoint:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
+@pytest.mark.django_db
+class TestCourseMemberEndpoint:
+    endpoint = "/api/v1/coursemembers/"
+
+    def test_add_coursemember_valid(self, authorized_user, course, test_user_not_coursemember):
+        url = f"{self.endpoint}{course.id}/"
+        response_dict = {
+            "user": test_user_not_coursemember.username,
+            "role": "ST",
+        }
+        serializer = CourseMemberAddSerializer(data=response_dict)
+        if serializer.is_valid():
+            response_dict = serializer.data
+        response = authorized_user.post(url, data=response_dict, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_add_coursemember_invalid(self, student, course, test_user_not_coursemember):
+        url = f"{self.endpoint}{course.id}/"
+        response_dict = {
+            "user": test_user_not_coursemember.username,
+            "role": "ST",
+        }
+        serializer = CourseMemberAddSerializer(data=response_dict)
+        if serializer.is_valid():
+            response_dict = serializer.data
+        response = student.post(url, data=response_dict, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_delete_coursemember_valid(self, authorized_user, course, test_user_student):
+        url = f"{self.endpoint}{course.id}/"
+        response_dict = {"user": test_user_student.username}
+        serializer = CourseMemberDeleteSerializer(data=response_dict)
+        if serializer.is_valid():
+            response_dict = serializer.data
+        response = authorized_user.delete(url, data=response_dict, format="json")
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_delete_coursemember_invalid(self, test_user, course, student):
+        url = f"{self.endpoint}{course.id}/"
+        response_dict = {"user": test_user.username}
+        serializer = CourseMemberDeleteSerializer(data=response_dict)
+        if serializer.is_valid():
+            response_dict = serializer.data
+        response = student.delete(url, data=response_dict, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN

@@ -25,6 +25,12 @@ def test_user(user_data):
 
 
 @pytest.fixture
+def test_user_not_coursemember():
+    user = User.objects.create_user(username="user2", password="qwerty921")
+    return user
+
+
+@pytest.fixture
 def authorized_user(api_client, test_user):
     client = api_client
     refresh = RefreshToken.for_user(test_user)
@@ -33,10 +39,9 @@ def authorized_user(api_client, test_user):
 
 
 @pytest.fixture
-def authorized_user_not_coursemember(api_client):
+def authorized_user_not_coursemember(api_client, test_user_not_coursemember):
     client = api_client
-    user = User.objects.create_user(username="user2", password="qwerty921")
-    refresh = RefreshToken.for_user(user)
+    refresh = RefreshToken.for_user(test_user_not_coursemember)
     client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
     return client
 
@@ -49,12 +54,17 @@ def course(test_user):
 
 
 @pytest.fixture
-def student(api_client, course):
-    client = api_client
+def test_user_student(course):
     user = User.objects.create_user(username="user3", password="qwerty921")
-    refresh = RefreshToken.for_user(user)
-    client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
     CourseMember.objects.create(course=course, user=user, role=CourseMember.STUDENT)
+    return user
+
+
+@pytest.fixture
+def student(api_client, test_user_student):
+    client = api_client
+    refresh = RefreshToken.for_user(test_user_student)
+    client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
     return client
 
 
