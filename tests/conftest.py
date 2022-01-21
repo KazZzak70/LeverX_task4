@@ -109,3 +109,29 @@ def hometask(lecture):
         lecture=lecture,
     )
     return hometask
+
+
+@pytest.fixture
+def file():
+    image = io.BytesIO()
+    Image.new('RGB', (150, 150)).save(image, 'JPEG')
+    image.seek(0)
+    return image.getvalue()
+
+
+@pytest.fixture
+def lecture(course):
+    lecture = baker.make(
+        Lecture,
+        course=course,
+    )
+    return lecture
+
+
+@pytest.fixture
+def hometask(lecture):
+    hometask = baker.make(
+        Hometask,
+        lecture=lecture,
+    )
+    return hometask

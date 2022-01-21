@@ -1,13 +1,10 @@
-import io
-from PIL import Image
-from faker import Faker
-from model_bakery import baker
-from rest_framework import status
 from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework import status
+from faker import Faker
+
 import pytest
 
 from lectures.models import Lecture
-from lectures.serializers import LectureDetailSerializer, LectureCreateSerializer
 
 
 @pytest.mark.django_db
