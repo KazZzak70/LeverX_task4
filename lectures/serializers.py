@@ -8,6 +8,12 @@ from lectures.models import (
 from courses.models import Course
 
 
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = '__all__'
+
+
 class CourseInLectureSerializer(serializers.ModelSerializer):
     """Вывод курса в лекции"""
     class Meta:
@@ -17,7 +23,6 @@ class CourseInLectureSerializer(serializers.ModelSerializer):
 
 class LectureCreateSerializer(serializers.ModelSerializer):
     """Добавление лекции"""
-    course = serializers.SlugRelatedField(slug_field="id", read_only=True)
 
     class Meta:
         model = Lecture
@@ -26,6 +31,7 @@ class LectureCreateSerializer(serializers.ModelSerializer):
 
 class LectureListSerializer(serializers.ModelSerializer):
     """Вывод списка лекций курса"""
+
     class Meta:
         model = Lecture
         fields = ("id", "name", )
@@ -50,7 +56,7 @@ class HometaskInLectureSerializer(serializers.ModelSerializer):
 class LectureDetailSerializer(serializers.ModelSerializer):
     """Вывод лекции"""
     course = CourseInLectureSerializer()
-    hometask = HometaskInLectureSerializer()
+    hometask = HometaskInLectureSerializer(many=True)
 
     class Meta:
         model = Lecture

@@ -3,7 +3,6 @@ from model_bakery import baker
 from rest_framework import status
 import pytest
 
-from courses.models import Course, CourseMember
 from courses.serializers import (
     CourseDetailSerializer,
     CourseCreateSerializer,
