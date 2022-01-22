@@ -39,7 +39,6 @@ class LectureListSerializer(serializers.ModelSerializer):
 
 class HometaskCreateSerializer(serializers.ModelSerializer):
     """Добавление домашнего задания"""
-    lecture = serializers.SlugRelatedField(slug_field="id", read_only=True)
 
     class Meta:
         model = Hometask
@@ -74,7 +73,6 @@ class HometaskDetailSerializer(serializers.ModelSerializer):
 
 class SolutionCreateSerializer(serializers.ModelSerializer):
     """Добавление решения"""
-    task = serializers.SlugRelatedField(slug_field="id", read_only=True)
 
     class Meta:
         model = Solution

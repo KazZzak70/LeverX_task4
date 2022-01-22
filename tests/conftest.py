@@ -9,7 +9,7 @@ import io
 import pytest
 
 from courses.models import Course, CourseMember
-from lectures.models import Lecture, Hometask
+from lectures.models import Lecture, Hometask, Solution
 
 
 @pytest.fixture
@@ -112,26 +112,11 @@ def hometask(lecture):
 
 
 @pytest.fixture
-def file():
-    image = io.BytesIO()
-    Image.new('RGB', (150, 150)).save(image, 'JPEG')
-    image.seek(0)
-    return image.getvalue()
-
-
-@pytest.fixture
-def lecture(course):
-    lecture = baker.make(
-        Lecture,
-        course=course,
+def solution(hometask, test_user_student):
+    solution = baker.make(
+        Solution,
+        student=test_user_student,
+        task=hometask,
+        status=Solution.COMPLETED,
     )
-    return lecture
-
-
-@pytest.fixture
-def hometask(lecture):
-    hometask = baker.make(
-        Hometask,
-        lecture=lecture,
-    )
-    return hometask
+    return solution

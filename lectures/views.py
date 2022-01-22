@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics
+from rest_framework.response import Response
 from lectures.serializers import (
     LectureCreateSerializer,
     LectureDetailSerializer,
@@ -14,9 +15,9 @@ from courses.permissions import (
     IsProfessorOrReadOnly,
     IsCourseMember,
 )
-from courses.models import Course
+from courses.models import Course, CourseMember
 from lectures.service import SolutionFilter
-from lectures.models import Lecture, Hometask
+from lectures.models import Lecture, Hometask, Solution
 
 
 class LectureCreateView(generics.CreateAPIView):
@@ -60,10 +61,9 @@ class HometaskView(generics.ListCreateAPIView):
         return HometaskDetailSerializer
 
     def perform_create(self, serializer):
-        lecture = get_object_or_404(klass=Lecture, id=serializer.validated_data["lecture"])
-        self.check_object_permissions(request=self.request, obj=lecture)
+        self.check_object_permissions(request=self.request, obj=serializer.validated_data["lecture"])
         serializer.save()
-        students = self.get_course_students(lecture)
+        students = self.get_course_students(serializer.validated_data["lecture"])
         for student in students:
             Solution.objects.create(student=student, task=serializer.instance)
 
