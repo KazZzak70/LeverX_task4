@@ -10,6 +10,7 @@ import pytest
 
 from courses.models import Course, CourseMember
 from lectures.models import Lecture, Hometask, Solution
+from reports.models import Mark, Report, Comment
 
 
 @pytest.fixture
@@ -120,3 +121,22 @@ def solution(hometask, test_user_student):
         status=Solution.COMPLETED,
     )
     return solution
+
+
+@pytest.fixture
+def mark():
+    mark = baker.make(
+        Mark,
+        value=9,
+    )
+    return mark
+
+
+@pytest.fixture
+def report(mark, solution):
+    report = baker.make(
+        Report,
+        solution=solution,
+        mark=mark,
+    )
+    return report

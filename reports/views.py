@@ -1,5 +1,5 @@
 from rest_framework import generics
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from courses.models import Course
 from reports.models import Report
 from lectures.models import Solution
@@ -33,9 +33,8 @@ class ReportsListView(generics.ListCreateAPIView):
             return ReportListSerializer
 
     def perform_create(self, serializer):
-        solution = get_object_or_404(klass=Solution, id=serializer.validated_data["solution"])
-        self.check_object_permissions(request=self.request, obj=solution)
-        super().perform_create(serializer)
+        self.check_object_permissions(request=self.request, obj=serializer.validated_data["solution"])
+        serializer.save()
 
 
 class ReportDetailView(generics.RetrieveUpdateDestroyAPIView):
