@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.core.validators import EmailValidator
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from lectures.serializers import LectureListSerializer
@@ -12,13 +13,15 @@ from courses.models import (
 class RegisterSerializer(serializers.ModelSerializer):
     """Регистрация пользователя"""
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    email = serializers.EmailField(required=True, max_length=None, allow_null=False, validators=[EmailValidator])
 
     class Meta:
         model = User
-        fields = ('username', 'password', )
+        fields = ('username', 'password', 'email', )
 
     def create(self, validated_data):
-        user = User.objects.create_user(username=validated_data['username'], password=validated_data['password'])
+        user = User.objects.create_user(username=validated_data['username'], password=validated_data['password'],
+                                        email=validated_data['email'])
         user.save()
         return user
 
@@ -27,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username")
+        fields = ("id", "username", "email")
 
 
 class CourseCreateSerializer(serializers.ModelSerializer):
