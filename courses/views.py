@@ -45,8 +45,7 @@ class CourseView(generics.ListCreateAPIView):
     def get_serializer_class(self):
         if self.request.method == "POST":
             return CourseCreateSerializer
-        else:
-            return CourseListSerializer
+        return CourseListSerializer
 
     def perform_create(self, serializer):
         super().perform_create(serializer)

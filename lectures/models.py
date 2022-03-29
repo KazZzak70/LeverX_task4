@@ -22,6 +22,9 @@ class Hometask(models.Model):
     name = models.CharField("Задание", max_length=150)
     task_description = models.TextField("Описание задания")
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, verbose_name="Лекция", related_name="hometask")
+    start_datetime = models.DateTimeField(auto_now_add=True, verbose_name="Дата/Время добавления")
+    deadline_datetime = models.DateTimeField(verbose_name="Дедлайн", blank=True)
+    average_mark = models.FloatField(verbose_name="Средняя отметка", blank=True, default=0.00)
 
     def __str__(self):
         return self.name

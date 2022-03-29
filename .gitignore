@@ -1,1 +1,9 @@
+.idea/
+__pycache__
+*.pyc
+*.pot
+*.log
 /.env.dev
+/media
+/staticfiles
+

@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics
 from rest_framework.response import Response
+from lectures.service import opportunity_to_submit_solution
 from lectures.serializers import (
     LectureCreateSerializer,
     LectureDetailSerializer,
@@ -102,6 +102,8 @@ class SolutionListView(generics.ListCreateAPIView):
                                      student=self.request.user,
                                      task=serializer.validated_data["task"])
         self.check_object_permissions(request, solution.task)
+        if opportunity_to_submit_solution(serializer.validated_data["task"].deadline_datetime):
+            return Response(status=status.HTTP_403_FORBIDDEN)
         solution.solution = serializer.validated_data["solution"]
         solution.status = Solution.COMPLETED
         solution.save()

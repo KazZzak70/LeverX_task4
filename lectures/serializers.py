@@ -1,3 +1,4 @@
+from django.utils.timezone import now
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from lectures.models import (
@@ -42,7 +43,12 @@ class HometaskCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Hometask
-        fields = ("name", "task_description", "lecture", )
+        fields = ("name", "task_description", "lecture", "deadline_datetime", )
+
+    def validate_deadline_datetime(self, value):
+        if value <= now():
+            raise serializers.ValidationError("Deadline can't be in the past")
+        return value
 
 
 class HometaskInLectureSerializer(serializers.ModelSerializer):

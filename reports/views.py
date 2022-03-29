@@ -29,8 +29,7 @@ class ReportsListView(generics.ListCreateAPIView):
     def get_serializer_class(self):
         if self.request.method == "POST":
             return ReportCreateSerializer
-        else:
-            return ReportListSerializer
+        return ReportListSerializer
 
     def perform_create(self, serializer):
         self.check_object_permissions(request=self.request, obj=serializer.validated_data["solution"])
@@ -58,8 +57,7 @@ class ReportDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method == "GET":
             return ReportDetailSerializer
-        else:
-            return ReportCreateSerializer
+        return ReportCreateSerializer
 
 
 class CommentCreateView(generics.CreateAPIView):

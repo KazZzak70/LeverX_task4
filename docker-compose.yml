@@ -1,52 +1,87 @@
-version: "3.8"
+version: "3"
 
 services:
   web:
     container_name: web
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/usr/src/app/
-    ports:
-      - "1337:8000"
     env_file:
       - .env.dev
+    ports:
+      - "1337:8000"
     depends_on:
-      - db
+      - postgresql
       - redis
-  db:
-    container_name: db
-    image: postgres:12.0-alpine
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_USER=django_courses_user
-      - POSTGRES_PASSWORD=django_courses_password
-      - POSTGRES_DB=django_courses_dev
+      - .:/home/appuser/project/
+    entrypoint: [ ]
+    command: bash -c "
+      ./wait_for.sh $${POSTGRES_HOST}:$${POSTGRES_PORT} &&
+      python manage.py migrate &&
+      python manage.py collectstatic --no-input &&
+      gunicorn django_courses.wsgi --bind 0.0.0.0:8000"
+  postgresql:
+    container_name: postgresql
+    image: postgres:latest
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    env_file:
+      - .env.dev
     ports:
       - "5432:5432"
   redis:
     container_name: redis
     image: redis:alpine
-  celery:
-    container_name: celery
-    build: .
-    command: celery -A django_courses worker -l INFO
     volumes:
-      - .:/usr/src/app/
+      - redis_data:/data
+  celery-worker-low-priority:
+    container_name: celery-worker-low-priority
+    entrypoint: [ ]
+    command: celery -A django_courses worker -l INFO -Q lowpriorityqueue --concurrency=1
     env_file:
       - .env.dev
+    build: .
+    volumes:
+      - .:/usr/src/app/
     depends_on:
       - redis
+      - postgresql
+  celery-worker-high-priority:
+    container_name: celery-worker-high-priority
+    entrypoint: [ ]
+    command: celery -A django_courses worker -l INFO -Q highpriorityqueue --concurrency=1
+    env_file:
+      - .env.dev
+    build: .
+    volumes:
+      - .:/usr/src/app/
+    depends_on:
+      - redis
+      - postgresql
   celery-beat:
     container_name: celery-beat
-    build: .
+    entrypoint: [ ]
     command: celery -A django_courses beat -l INFO
-    volumes:
-      - .:/usr/src/app/
     env_file:
       - .env.dev
+    build: .
+    volumes:
+      - .:/usr/src/app/
     depends_on:
       - redis
+      - postgresql
+  flower:
+    container_name: flower
+    image: mher/flower
+    env_file:
+      - .env.dev
+    ports:
+      - "5555:5555"
+    volumes:
+      - flower_data:/data/
+    depends_on:
+      - redis
+      - celery
 volumes:
-  postgres_data:
+  pg_data:
+  redis_data:
+  flower_data:

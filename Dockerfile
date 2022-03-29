@@ -1,14 +1,22 @@
-FROM python:3.8.12-slim
-
-WORKDIR /usr/src/app
+FROM python:3.10.0-slim
 
 ENV PYTHONDOWNWRITEBYTECODE 1
 ENV PYTHONBUFFERED 1
 
-RUN apt-get update \
-    && apt-get install postgresql gcc python3-dev musl-dev netcat -y
+ARG APP_USER=appuser
+RUN groupadd -r ${APP_USER} && useradd --no-log-init --create-home -r -u 1000 -g ${APP_USER} ${APP_USER}
 
-COPY ./requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+ARG APP_DIR=/home/${APP_USER}/project/
+RUN mkdir ${APP_DIR} && chown ${APP_USER}:${APP_USER} ${APP_DIR}
 
-COPY . .
+WORKDIR ${APP_DIR}
+
+COPY ./requirements.txt ${APP_DIR}
+
+RUN pip install --upgrade pip && pip install --no-cache-dir -r ${APP_DIR}requirements.txt
+
+COPY --chown=${APP_USER}:${APP_USER} . ./wait_for.sh ${APP_DIR}
+
+USER ${APP_USER}:${APP_USER}
+
+ENTRYPOINT ["gunicorn", "django_courses.wsgi"]

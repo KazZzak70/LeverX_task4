@@ -14,7 +14,7 @@ class LectureAdmin(admin.ModelAdmin):
 
 @admin.register(Hometask)
 class HometaskAdmin(admin.ModelAdmin):
-    list_display = ("name", "lecture", "id", )
+    list_display = ("name", "lecture", "start_datetime", "deadline_datetime", "id", )
     list_display_links = ("name", )
 
 
