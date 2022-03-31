@@ -1,3 +1,5 @@
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 import datetime
 import os
 
@@ -130,3 +132,10 @@ CELERY_TASK_ROUTES = {
     'reports.tasks.LowPriorityTask': {'queue': 'lowpriorityqueue', },
     'reports.tasks.HighPriorityTask': {'queue': 'highpriorityqueue', },
 }
+
+sentry_sdk.init(
+    dsn="https://e765c36bf4d04c5aafc8aeee2d7b15a9@o1183663.ingest.sentry.io/6301103",
+    integrations=[DjangoIntegration()],
+    traces_sample_rate=1.0,
+    send_default_pii=True
+)
